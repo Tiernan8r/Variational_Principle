@@ -8,8 +8,6 @@ import json
 
 def main():
 
-
-
     logging.config.dictConfig(json.load(open("logging.json")))
     logger = logging.getLogger(__name__)
 
@@ -17,7 +15,7 @@ def main():
 
     logger.info("Loading system info from 'data.json':")
     data_file = json_data.JsonData()
-    logger.info("Done reading json file.")
+    logger.info("DONE reading json file.")
 
     logger.info("Assigning variables from 'data.json'")
     # Whether to plot the potential function or not.
@@ -46,7 +44,7 @@ def main():
 
     logger.info("Computing the energy eigenstates")
     r, V, all_psi, all_E = vp.compute(start, stop, N, D, num_states, num_iterations)
-    logger.info("DONE")
+    logger.info("DONE computing energy eigenstates")
 
     i = 0
     for E in all_E:
@@ -58,7 +56,7 @@ def main():
     logger.info("Beginning plotting:")
     # plot the generated psis.
     plt.plot_system(r, all_psi, D, include_potential, V, v_scale)
-    logger.info("DONE")
+    logger.info("DONE plotting")
 
     logger.info("--END--")
 

@@ -190,7 +190,7 @@ np.ndarray, np.ndarray, np.ndarray):
     all_psi = []
     all_E = []
 
-    logger.info("Beginning iteration over simulation")
+    logger.info("Beginning computation of %d states", num_states)
     # iterate over the number of states we want to generate psi for.
     for i in range(num_states):
 

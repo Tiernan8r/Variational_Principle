@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import numpy as np
 
+import logging
+
+## TODO: change these variable to be in 'data.json' (kinda half implemented)
 # the colour map for the surface plots.
 colour_map = "autumn"
 # The colour map is set by the global string
@@ -28,8 +31,15 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     :param V_scale: The amount to scale the wavefunction by when plotting it with the potential
     """
 
+    logger = logging.getLogger(__name__)
+    logger.info("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), pot_sys_name)
+
     # If the system is 1D, plot a line
     if D == 1:
+
+        logger.info("The system will be plotted as one dimensional.")
+        logger.info("Plotting line plot(s) for the energy eigenstate(s).")
+        logger.info("The eigenstate(s) will be plotted with the potential: %s", include_V)
 
         # The number of psi states to plot.
         num_states = len(all_psi)
@@ -71,6 +81,9 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     # If the system is 2D, plot the img, wireframe and surfaces.
     elif D == 2:
 
+        logger.info("The system will be plotted as two dimensional.")
+        logger.info("Plotting image, wireframe and surface plots for the energy eigenstate(s).")
+
         if include_V:
             title = "The Potential function for the {} along $x$ & $y$".format(pot_sys_name)
             _plot_img(*r, V, title)
@@ -86,6 +99,9 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
 
     # if the system is 3D, plot the 3D scatter.
     elif D == 3:
+
+        logger.info("The system will be plotted as three dimensional.")
+        logger.info("Plotting a 3D scatter plot for the energy eigenstate(s).")
 
         if include_V:
             title = "The Potential function for the {} along $x$, $y$ & $z$".format(pot_sys_name)
@@ -106,6 +122,7 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
 
     # All higher order systems can't be easily visualised.
     else:
+        logger.warning("The system is 4 or more dimensions in size! Geometric plotting not possible.")
         return
 
 

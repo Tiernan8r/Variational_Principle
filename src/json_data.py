@@ -18,7 +18,7 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
                plot_scale, filename="data.json"):
 
     logger = logging.getLogger(__name__)
-    logger.info("Writing json data to %s", filename)
+    logger.info("Writing json data to '%s'", filename)
 
     data = {"label": label,
             "start": start,
@@ -40,14 +40,14 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
 def read_data(filename="data.json"):
 
     logger = logging.getLogger(__name__)
-    logger.info("Reading json data from %s", filename)
+    logger.info("Reading json data from '%s'", filename)
 
     with open(filename) as data_file:
         try:
             json_data = json.load(data_file)
         except json.JSONDecodeError as e:
             json_data = read_default()
-            logger.warning("Error encountered when trying to read %s", filename)
+            logger.warning("Error encountered when trying to read '%s'", filename)
             logger.warning(e)
         return json_data
 
