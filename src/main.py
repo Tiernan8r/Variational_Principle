@@ -4,13 +4,13 @@ import json_data
 
 import logging
 import logging.config
-
+import json
 
 def main():
 
-    print(__name__)
 
-    logging.config.fileConfig("logging.conf")
+
+    logging.config.dictConfig(json.load(open("logging.json")))
     logger = logging.getLogger(__name__)
 
     logger.info("Beginning simulation:")
