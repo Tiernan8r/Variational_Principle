@@ -1,4 +1,5 @@
 import json
+import logging
 
 # hardcoded default data incase the default_data.json file doesn't exist or can't be read.
 _backup_default_data = {"label": "Linear Harmonic Oscillator",
@@ -15,6 +16,10 @@ _backup_default_data = {"label": "Linear Harmonic Oscillator",
 
 def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_iterations, plot_with_potential,
                plot_scale, filename="data.json"):
+
+    logger = logging.getLogger(__name__)
+    logger.info("Writing json data to %s", filename)
+
     data = {"label": label,
             "start": start,
             "stop": stop,
@@ -29,15 +34,21 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
         dump = json.dumps(data, indent=4, separators=(",", ": "), ensure_ascii=False)
         data_file.write(dump)
 
+    logger.info("Successfully wrote %s to file.", data)
+
 
 def read_data(filename="data.json"):
+
+    logger = logging.getLogger(__name__)
+    logger.info("Reading json data from %s", filename)
+
     with open(filename) as data_file:
         try:
             json_data = json.load(data_file)
         except json.JSONDecodeError as e:
             json_data = read_default()
-            ##TODO: logging
-            # raise e
+            logger.warning("Error encountered when trying to read %s", filename)
+            logger.warning(e)
         return json_data
 
 
