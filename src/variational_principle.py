@@ -1,62 +1,15 @@
 import random
-import time
 
 import numpy as np
-from scipy.linalg import null_space
+import scipy.linalg as la
 
-from plot.plot import plotting
-from diffrentiation.laplacian import generate_laplacian
-from integration.romberg import romberg
-from potentials.potential import potential
-
-# global constants:
-hbar = 6.5821189 * 10 ** -16  # 6.582119569x10^-16 eV (from wikipedia)
-# electron
-m = 9.1093819 * 10 ** -31  # 9.1093837015(28)x10^-31
-# factor used in calculation of energy
-factor = -(hbar ** 2) / (2 * m)
-
-# The Lagrangian Derivative matrix
-global DEV2
-
-
-def normalise(psi: np.ndarray, dr: float) -> np.ndarray:
-    """
-    The function takes in a non-normalised psi wavefunction, and returns the normalised version of it.
-    :param psi: The wavefunction to normalise.
-    :param dr: The grid spacing of the wavefunction.
-    :return: The normalised wavefunction
-    """
-    # integrate using the rectangular rule
-    norm = (psi * psi).sum() * dr
-    # Since psi is displayed as |psi|^2, take the sqrt of the norm
-    norm_psi = psi / np.sqrt(norm)
-    return norm_psi
-
-
-def energy(psi: np.ndarray, V: np.ndarray, dr: float) -> float:
-    """
-    Calculates the energy eigenvalue of a given wavefunction psi in a given potential system V.
-    :param psi: The wavefunction in the system.
-    :param V: The potential function of the system.
-    :param dr: The grid spacing in the system.
-    :return: The energy eigenvalue E.
-    """
-    # when V is inf, wil get an invalid value error at runtime, not an issue, is sorted in filtering below:
-    Vp = V * psi
-    # filter out nan values in Vp
-    Vp = np.where(np.isfinite(Vp), Vp, 0)
-
-    # Calculate the kinetic energy of the system
-    # DEV2 is the lagrangian 2nd derivative matrix.
-    Tp = factor * (DEV2 @ psi)
-
-    # Return the integral of the KE and PE applied to psi, which is the energy.
-    return (psi * (Tp + Vp)).sum() * dr
+import quantum_operators as qo
+import calculus.laplacian as lap
+import potential as pot
 
 
 def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
-              prev_psi_linear: np.ndarray, n: int) -> np.ndarray:
+              prev_psi_linear: np.ndarray, n: int) -> (np.ndarray, float):
     """
     Calculates the nth psi energy eigenstate wavefunction of a given potential system.
     :param r: The grid coordinates.
@@ -68,17 +21,12 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     :param n: The order of the state.
     :return: The energy eigenstate wavefunction psi of order n for the potential system.
     """
-    # Get the time that calculations start at.
-    t1 = time.time()
 
     # Get the orthonormal basis for this state, by finding the null space if the previous lower order psi
-    orthonormal_basis = null_space(prev_psi_linear).T
-
-    # Set a seed for repeatable results.
-    random.seed("THE-VARIATIONAL-PRINCIPLE")
+    orthonormal_basis = la.null_space(prev_psi_linear).T
 
     # Calculate the potential of the system.
-    V = potential(r)
+    V = pot.potential(r)
     # turn the potential grid into a linear column vector for linear algebra purposes.
     V = V.reshape(N ** D)
 
@@ -116,7 +64,7 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     orthonormal_basis = np.where(nan_indices, 0, orthonormal_basis)
 
     # get a default initial energy to compare against.
-    prev_E = energy(psi, V, dr)
+    prev_E = qo.energy(psi, V, dr)
 
     # Keep track of the number of orthonormal bases that there are.
     num_bases = len(orthonormal_basis)
@@ -139,10 +87,10 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
         # tweak the psi wavefunction by the generated change, with the given basis.
         psi += basis_vector * rand_change
         # re normalise the changed psi
-        psi = normalise(psi, dr)
+        psi = qo.normalise(psi, dr)
 
         # get the corresponding new energy for the changed psi
-        new_E = energy(psi, V, dr)
+        new_E = qo.energy(psi, V, dr)
 
         # if the new energy is lower than the current energy, keep the change.
         if new_E < prev_E:
@@ -150,13 +98,7 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
         # otherwise set psi back to the way it was before the change.
         else:
             psi -= basis_vector * rand_change
-            psi = normalise(psi, dr)
-
-    # Display the final energy of the wavefunction to the console.
-    print("Final Energy:", energy(psi, V, dr))
-    # calculate how long the computation took.
-    t2 = time.time()
-    print("The time for the " + str(n) + "th iteration is:", t2 - t1, "s.\n")
+            psi = qo.normalise(psi, dr)
 
     # turn psi back from a column vector to a grid.
     psi = psi.reshape([N] * D)
@@ -166,11 +108,15 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     if phase < 0:
         psi *= -1
 
+    # compute the energy of the resulted wavefunction
+    final_energy = qo.energy(psi, V, dr)
+
     # return the generated psi as a grid.
-    return psi
+    return psi, final_energy
 
 
-def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5):
+def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5) -> (
+np.ndarray, np.ndarray, np.ndarray):
     """
     The method to set up the variables and system, and aggregate the computed wavefunctions.
     :param start: The lower bound of the grid.
@@ -181,6 +127,9 @@ def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5
     :param num_iterations: The number of iterations per computation.
     :return: r, V, all_psi: the grid, potential function and the list of all the wavefunctions.
     """
+    # Set a seed for repeatable results.
+    random.seed("THE-VARIATIONAL-PRINCIPLE")
+
     # Keep the number of states in bounds, so that the orthonormal basis generator doesn't return an error.
     if num_states >= N:
         num_states = N - 2
@@ -193,14 +142,13 @@ def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5
     r = np.array(np.meshgrid(*axes, indexing="ij"))
 
     # generate the potential for the system
-    V = potential(r)
+    V = pot.potential(r)
 
     # Calculate the grid spacing for the symmetric grid.
     dr = (stop - start) / N
 
     # Generate the 2nd order finite difference derivative matrix.
-    global DEV2
-    DEV2 = generate_laplacian(D, N, dr)
+    lap.generate_laplacian(D, N, dr)
 
     # Keep track whether we are on the first iteration or not.
     first_iteration = True
@@ -208,45 +156,25 @@ def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5
     # Stores the psi as linear column vectors, used for calculating the next psi in the series.
     all_psi_linear = np.zeros((1, N ** D))
     # stores in their proper shape as grids, used for plotting.
-    all_psi = np.zeros((1, N * D))
+    all_psi = []
+    all_E = []
 
     # iterate over the number of states we want to generate psi for.
     for i in range(num_states):
         # Generate the psi for this order number
-        psi = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
+        psi, E = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
 
         # Store the generated psi in both ways in their corresponding arrays.
+
+        all_psi.append(psi)
+        all_E.append(E)
+
         psi_linear = psi.reshape(N ** D)
         if first_iteration:
             all_psi_linear = np.array([psi_linear])
-            all_psi = np.array([psi])
             first_iteration = False
         else:
             all_psi_linear = np.vstack((all_psi_linear, [psi_linear]))
-            all_psi = np.vstack((all_psi, [psi]))
 
-    return r, V, all_psi
+    return r, V, all_psi, all_E
 
-
-def main():
-    # Whether to plot the potential function or not.
-    include_potential = True
-
-    # The size and range of the grid
-    start, stop, N = -10, 10, 100
-    # The number of orders of psi to calculate
-    num_states = 1
-    # The number of axes of the system
-    D = 1
-    # Number of times to generate samples in the wavefunction
-    num_iterations = 10 ** 5
-
-    # a factor to scale the psi by when plotting it together with the potential function in the 1D case.
-    v_scale = 10
-
-    r, V, all_psi = compute(start, stop, N, D, num_states, num_iterations)
-    # plot the generated psis.
-    plotting(r, all_psi, D, include_potential, V, v_scale)
-
-
-main()

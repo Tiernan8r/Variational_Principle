@@ -1,7 +1,8 @@
 from scipy.sparse import diags
-from numpy import ndarray
+import numpy as np
 
-def partial_derivative_matrix(D: int, N: int, axis_number: int, dr: float) -> ndarray:
+
+def _partial_derivative_matrix(D: int, N: int, axis_number: int, dr: float) -> np.ndarray:
     """
     Generates the sparse second derivative central difference derivative matrix along given axis, for a grid of dimensions N^D.
     :param D: The number of dimensions of the system, e.g.: 3D...
@@ -41,7 +42,7 @@ def generate_laplacian(D: int, N: int, dr: float):
     # iterate over each dimension in the system.
     for ax in range(D):
         # generate the second order central difference matrix for this axis
-        D_n = partial_derivative_matrix(D, N, ax, dr)
+        D_n = _partial_derivative_matrix(D, N, ax, dr)
         # if it's the first matrix generated, set DEV2 equal to it.
         if laplacian is None:
             laplacian = D_n
@@ -49,4 +50,10 @@ def generate_laplacian(D: int, N: int, dr: float):
         else:
             laplacian += D_n
 
-    return laplacian
+    global DEV2
+    DEV2 = laplacian
+
+
+def get_laplacian():
+    global DEV2
+    return DEV2
