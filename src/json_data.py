@@ -35,7 +35,9 @@ def read_data(filename="data.json"):
         try:
             json_data = json.load(data_file)
         except json.JSONDecodeError as e:
-            raise e
+            json_data = read_default()
+            ##TODO: logging
+            # raise e
         return json_data
 
 
