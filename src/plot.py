@@ -1,23 +1,14 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
-import numpy as np
 
+import json_data
 import logging
-
-## TODO: change these variable to be in 'data.json' (kinda half implemented)
-# the colour map for the surface plots.
-colour_map = "autumn"
-# The colour map is set by the global string
-cmap = plt.cm.get_cmap(colour_map)
 
 # neatness nicety, for displaying indexing of the states.
 th = {1: "st", 2: "nd", 3: "rd"}
 
 # a list of names for the 1st 10 axes.
 axes = ("x", "y", "z", "w", "q", "r", "s", "t", "u", "v")
-
-# The name of the QM system to be shown in the plot titles.
-pot_sys_name = "Harmonic Oscillator"
 
 
 def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
@@ -31,8 +22,10 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     :param V_scale: The amount to scale the wavefunction by when plotting it with the potential
     """
 
+    sys_name = json_data.JsonData().label
+
     logger = logging.getLogger(__name__)
-    logger.info("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), pot_sys_name)
+    logger.info("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), sys_name)
 
     # If the system is 1D, plot a line
     if D == 1:
@@ -57,7 +50,7 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
 
         # iterate over all the functions to plot, and plot them individually.
         for i in range(len(all_psi)):
-            title = "The {} for the {} along $x$:".format(state_names[i], pot_sys_name)
+            title = "The {} for the {} along $x$:".format(state_names[i], sys_name)
             file_name = "state_{}".format(i - 1)
             state = "$\psi$"
 
@@ -85,14 +78,14 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
         logger.info("Plotting image, wireframe and surface plots for the energy eigenstate(s).")
 
         if include_V:
-            title = "The Potential function for the {} along $x$ & $y$".format(pot_sys_name)
+            title = "The Potential function for the {} along $x$ & $y$".format(sys_name)
             _plot_img(*r, V, title)
             _plot_wireframe(*r, V, title, "V")
             _plot_surface(*r, V, title, "V")
 
         num_states = len(all_psi)
         for n in range(num_states):
-            title = "$\psi_{}$ for the {} along $x$ & $y$".format(n, pot_sys_name)
+            title = "$\psi_{}$ for the {} along $x$ & $y$".format(n, sys_name)
             _plot_img(*r, all_psi[n], title)
             _plot_wireframe(*r, all_psi[n], title, "$\psi$")
             _plot_surface(*r, all_psi[n], title, "$\psi$")
@@ -104,7 +97,7 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
         logger.info("Plotting a 3D scatter plot for the energy eigenstate(s).")
 
         if include_V:
-            title = "The Potential function for the {} along $x$, $y$ & $z$".format(pot_sys_name)
+            title = "The Potential function for the {} along $x$, $y$ & $z$".format(sys_name)
             N = V.shape[1]
             D = len(V.shape)
             V = V.reshape(N ** D)
@@ -112,7 +105,7 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
 
         num_states = len(all_psi)
         for n in range(num_states):
-            title = "$\psi_{}$ for the {} along $x$, $y$ & $z$".format(n, pot_sys_name)
+            title = "$\psi_{}$ for the {} along $x$, $y$ & $z$".format(n, sys_name)
 
             N = all_psi[n].shape[1]
             D = len(all_psi[n].shape)
@@ -142,6 +135,8 @@ def _plot_line(x, y, title, ylabel="$\psi$", legend=None, filename=None, include
 
 # A method to plot the 2D system as a flat image.
 def _plot_img(x, y, z, title):
+    colour_map = json_data.JsonData().colourmap
+    cmap = plt.cm.get_cmap(colour_map)
     plt.contourf(x, y, z, cmap=cmap)
     plt.colorbar()
     plt.title(title)
@@ -164,6 +159,10 @@ def _plot_wireframe(x, y, z, title, zlabel="$\psi$"):
 
 # A method to plot the 2D system as a surface plot.
 def _plot_surface(x, y, z, title, zlabel="$\psi$"):
+
+    colour_map = json_data.JsonData().colourmap
+    cmap = plt.cm.get_cmap(colour_map)
+
     fig = plt.figure()
     ax = fig.gca(projection="3d")
     surf = ax.plot_surface(x, y, z, cmap=cmap)
@@ -177,10 +176,13 @@ def _plot_surface(x, y, z, title, zlabel="$\psi$"):
 
 # A method to plot the 3d system as a 3D scatter plot.
 def _plot_3D_scatter(x, y, z, vals, title):
+
+    colour_map = json_data.JsonData().colourmap
+
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-    p = ax.scatter3D(x, y, zs=z, c=vals, cmap=colour_map)
+    p = ax.scatter3D(   x, y, zs=z, c=vals, cmap=colour_map)
     fig.colorbar(p, ax=ax)
 
     plt.title(title)

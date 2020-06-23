@@ -10,12 +10,13 @@ _backup_default_data = {"label": "Linear Harmonic Oscillator",
                         "num_samples": 100,
                         "num_iterations": 5,
                         "plot_with_potential": False,
-                        "plot_scale": 10
+                        "plot_scale": 10,
+                        "colourmap": "autumn"
                         }
 
 
 def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_iterations, plot_with_potential,
-               plot_scale, filename="data.json"):
+               plot_scale, colourmap, filename="data.json"):
 
     logger = logging.getLogger(__name__)
     logger.info("Writing json data to '%s'", filename)
@@ -28,7 +29,8 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
             "num_samples": num_samples,
             "num_iterations": num_iterations,
             "plot_with_potential": plot_with_potential,
-            "plot_scale": plot_scale
+            "plot_scale": plot_scale,
+            "colourmap": colourmap
             }
     with open(filename, "w", encoding="utf-8") as data_file:
         dump = json.dumps(data, indent=4, separators=(",", ": "), ensure_ascii=False)
@@ -68,9 +70,10 @@ class JsonData (object):
         num_iterations = data.get("num_iterations", _backup_default_data["num_iterations"])
         plot_with_potential = data.get("plot_with_potential", _backup_default_data["plot_with_potential"])
         plot_scale = data.get("plot_scale", _backup_default_data["plot_scale"])
+        cmap = data.get("colourmap", _backup_default_data["colourmap"])
 
         write_data(label, start, stop, num_states, num_dimensions, num_samples, num_iterations,
-                   plot_with_potential, plot_scale, filename=self._filename)
+                   plot_with_potential, plot_scale, cmap, filename=self._filename)
 
     def _read(self):
         return read_data(self._filename)
@@ -163,6 +166,16 @@ class JsonData (object):
     def plot_scale(self, sc):
         data = self._read()
         data["plot_scale"] = sc
+        self._write(data)
+
+    @property
+    def colourmap(self):
+        return self._read().get("colourmap", _backup_default_data["colourmap"])
+
+    @colourmap.setter
+    def colourmap(self, cmap):
+        data = self._read()
+        data["colourmap"] = cmap
         self._write(data)
 
 

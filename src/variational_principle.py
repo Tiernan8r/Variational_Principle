@@ -119,6 +119,10 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     logger.info("Simulation done at  [%s]", time.asctime())
     logger.info("Took %f seconds", t2 - t1)
 
+    logger.info("Calculating final energy of the eigenstate.")
+    # compute the energy of the resulted wavefunction
+    final_energy = qo.energy(psi, V, dr)
+
     # turn psi back from a column vector to a grid.
     psi = psi.reshape([N] * D)
 
@@ -127,10 +131,6 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     phase = np.sum(psi) * dr
     if phase < 0:
         psi *= -1
-
-    logger.info("Calculating final energy of the eigenstate.")
-    # compute the energy of the resulted wavefunction
-    final_energy = qo.energy(psi, V, dr)
 
     logger.info("DONE")
     # return the generated psi as a grid.
@@ -165,7 +165,10 @@ np.ndarray, np.ndarray, np.ndarray):
     # The coordinates along the x axis
     x = np.linspace(start, stop, N)
     # The axes along each dimension
-    axes = [x] * D
+    # axes = [x] * D
+    axes = [x]
+    for i in range(D - 1):
+        axes.append(x)
     # populate the grid using the axes.
     r = np.array(np.meshgrid(*axes, indexing="ij"))
 

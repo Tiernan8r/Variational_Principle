@@ -7,5 +7,6 @@
   "num_samples": 100,
   "num_iterations": 5,
   "plot_with_potential": false,
-  "plot_scale": 10
+  "plot_scale": 10,
+  "colourmap": "autumn"
 }
