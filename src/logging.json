@@ -23,7 +23,7 @@
       "propagate": "no"
     },
     "quantum_operators": {
-      "level": "INFO",
+      "level": "WARNING",
       "handlers": [
         "console"
       ],
