@@ -1,5 +1,6 @@
 import numpy as np
 import calculus.laplacian as lap
+import scipy.integrate as intg
 
 # global constants:
 hbar = 6.5821189 * 10 ** -16  # 6.582119569x10^-16 eV (from wikipedia)
@@ -17,7 +18,11 @@ def normalise(psi: np.ndarray, dr: float) -> np.ndarray:
     :return: The normalised wavefunction
     """
     # integrate using the rectangular rule
-    norm = (psi * psi).sum() * dr
+    psi_sq = psi * psi
+    # norm = psi_sq.sum() * dr
+
+    norm = intg.trapz(psi_sq, dx=dr)
+    # norm = intg.simps(psi_sq, dx=dr)
     # Since psi is displayed as |psi|^2, take the sqrt of the norm
     norm_psi = psi / np.sqrt(norm)
     return norm_psi
@@ -44,5 +49,8 @@ def energy(psi: np.ndarray, V: np.ndarray, dr: float) -> float:
     Tp = factor * (DEV2 @ psi)
 
     # Return the integral of the KE and PE applied to psi, which is the energy.
-    return (psi * (Tp + Vp)).sum() * dr
+    H = psi * (Tp + Vp)
+    # return H.sum() * dr
+    return intg.trapz(H, dx=dr)
+    # return intg.simps(H, dx=dr)
 
