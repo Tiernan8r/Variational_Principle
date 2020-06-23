@@ -7,6 +7,8 @@ import quantum_operators as qo
 import calculus.laplacian as lap
 import potential as pot
 
+import logging
+import time
 
 def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
               prev_psi_linear: np.ndarray, n: int) -> (np.ndarray, float):
@@ -22,14 +24,20 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     :return: The energy eigenstate wavefunction psi of order n for the potential system.
     """
 
+    logger = logging.getLogger(__name__)
+    logger.info("Beginning computation of energy eigenstate.")
+
+    logger.info("Calculating the orthonormal basis.")
     # Get the orthonormal basis for this state, by finding the null space if the previous lower order psi
     orthonormal_basis = la.null_space(prev_psi_linear).T
 
+    logger.info("Calculating the potential")
     # Calculate the potential of the system.
     V = pot.potential(r)
     # turn the potential grid into a linear column vector for linear algebra purposes.
     V = V.reshape(N ** D)
 
+    logger.info("Setup default wavefunction.")
     # generate an initial psi, I've found that a quadratic function works nicely (no discontinuities.)
     psi = (0.5 * r ** 2).sum(axis=0)
     # psi = np.ones(r.shape).sum(axis=0)
@@ -37,6 +45,7 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     # linearise psi from a grid to a column vector
     psi = psi.reshape(N ** D)
 
+    logger.info("Filtering infinite values from the wavefunction, potential and orthonormal basis.")
     # Account for infinite values in the potential:
     len_V = len(V)
     # Keep track of all the indices that have an inf value for the V.
@@ -63,11 +72,17 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
         nan_indices[j] = False
     orthonormal_basis = np.where(nan_indices, 0, orthonormal_basis)
 
+    logger.info("Calculating previous energy.")
     # get a default initial energy to compare against.
     prev_E = qo.energy(psi, V, dr)
 
     # Keep track of the number of orthonormal bases that there are.
     num_bases = len(orthonormal_basis)
+
+    logger.info("Iterating over %d simulations", num_iterations)
+    t1 = time.time()
+    logger.info("Simulation began at [%s]", time.asctime())
+
     # loop for the desired number of iterations
     for i in range(num_iterations):
 
@@ -100,17 +115,24 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
             psi -= basis_vector * rand_change
             psi = qo.normalise(psi, dr)
 
+    t2 = time.time()
+    logger.info("Simulation done at  [%s]", time.asctime())
+    logger.info("Took %f seconds", t2 - t1)
+
     # turn psi back from a column vector to a grid.
     psi = psi.reshape([N] * D)
 
+    logger.info("Correcting the arbitrary phase of the computed eigenstate.")
     # Correction of phase, to bring it to the positive for nicer plotting.
     phase = np.sum(psi) * dr
     if phase < 0:
         psi *= -1
 
+    logger.info("Calculating final energy of the eigenstate.")
     # compute the energy of the resulted wavefunction
     final_energy = qo.energy(psi, V, dr)
 
+    logger.info("DONE")
     # return the generated psi as a grid.
     return psi, final_energy
 
@@ -127,13 +149,19 @@ np.ndarray, np.ndarray, np.ndarray):
     :param num_iterations: The number of iterations per computation.
     :return: r, V, all_psi: the grid, potential function and the list of all the wavefunctions.
     """
+
+    logger = logging.getLogger(__name__)
+    logger.info("Beginning computation of %d energy eigenstate(s).", num_states)
+
     # Set a seed for repeatable results.
     random.seed("THE-VARIATIONAL-PRINCIPLE")
 
     # Keep the number of states in bounds, so that the orthonormal basis generator doesn't return an error.
     if num_states >= N:
+        logger.info("Total number of states to calculate constrained from %d to %d, due to computational limitation.", num_states, N - 2)
         num_states = N - 2
 
+    logger.info("Generating spatial grid")
     # The coordinates along the x axis
     x = np.linspace(start, stop, N)
     # The axes along each dimension
@@ -141,12 +169,15 @@ np.ndarray, np.ndarray, np.ndarray):
     # populate the grid using the axes.
     r = np.array(np.meshgrid(*axes, indexing="ij"))
 
+    logger.info("Generating potential.")
     # generate the potential for the system
     V = pot.potential(r)
 
     # Calculate the grid spacing for the symmetric grid.
     dr = (stop - start) / N
+    logger.info("The grid spacing of the system is: dr=%f", dr)
 
+    logger.info("Generating the Laplacian operator for the system.")
     # Generate the 2nd order finite difference derivative matrix.
     lap.generate_laplacian(D, N, dr)
 
@@ -159,13 +190,19 @@ np.ndarray, np.ndarray, np.ndarray):
     all_psi = []
     all_E = []
 
+    logger.info("Beginning iteration over simulation")
     # iterate over the number of states we want to generate psi for.
     for i in range(num_states):
+
+        logger.info("Calculating the energy eigenstate and eigenvalue for state %d", i)
+        logger.info("=" * 10)
         # Generate the psi for this order number
         psi, E = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
+        logger.info("=" * 10)
+        logger.info("DONE generating energy eigenstate and eigenvalue")
 
+        logger.info("Saving computed values to data sets")
         # Store the generated psi in both ways in their corresponding arrays.
-
         all_psi.append(psi)
         all_E.append(E)
 
@@ -176,5 +213,6 @@ np.ndarray, np.ndarray, np.ndarray):
         else:
             all_psi_linear = np.vstack((all_psi_linear, [psi_linear]))
 
+    logger.info("DONE simulation of %d energy eigenstate(s)", num_states)
     return r, V, all_psi, all_E
 
