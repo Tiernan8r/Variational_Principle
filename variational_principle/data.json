@@ -3,10 +3,10 @@
   "start": -10,
   "stop": 10,
   "num_states": 1,
-  "num_dimensions": 3,
-  "num_samples": 10,
-  "num_iterations": 0,
+  "num_dimensions": 1,
+  "num_samples": 100,
+  "num_iterations": 5,
   "plot_with_potential": false,
   "plot_scale": 30,
-  "colourmap": "hsv"
+  "colourmap": "autumn"
 }
