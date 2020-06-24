@@ -61,4 +61,5 @@ def main():
     logger.info("--END--")
 
 
-main()
+if __name__ == "__main__":
+    main()
