@@ -15,14 +15,14 @@
     }
   },
   "loggers": {
-    "variational_principle.main": {
+    "main": {
       "level": "DEBUG",
       "handlers": [
         "console"
       ],
       "propagate": "no"
     },
-    "variational_principle.quantum_operators": {
+    "quantum_operators": {
       "level": "WARNING",
       "handlers": [
         "console"

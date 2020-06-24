@@ -4,11 +4,15 @@ import numpy as np
 import scipy.linalg as la
 
 import variational_principle.quantum_operators as qo
+# import quantum_operators as qo
 import variational_principle.calculus.laplacian as lap
+# import calculus.laplacian as lap
 import variational_principle.potential as pot
+# import potential as pot
 
 import logging
 import time
+
 
 def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
               prev_psi_linear: np.ndarray, n: int) -> (np.ndarray, float):

@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
-import variational_principle.json_data
+import variational_principle.json_data as json_data
+# import json_data
 import logging
+
+import os
 
 # neatness nicety, for displaying indexing of the states.
 th = {1: "st", 2: "nd", 3: "rd"}
@@ -22,9 +25,23 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     :param V_scale: The amount to scale the wavefunction by when plotting it with the potential
     """
 
-    sys_name = json_data.JsonData().label
-
     logger = logging.getLogger(__name__)
+
+    if not os.path.exists("data/plots"):
+        logger.info("The path for saving image files does not exist, initialising it:")
+        logger.info("Working with path: %s", os.getcwd())
+        try:
+            path = os.path.join(os.getcwd(), "data/plots")
+            os.makedirs(path)
+            logger.info("Made directory %s", path)
+        except FileExistsError as e:
+            logger.warning(e)
+            raise e
+        except FileNotFoundError as e:
+            logger.warning(e)
+            raise e
+
+    sys_name = json_data.JsonData().label
     logger.info("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), sys_name)
 
     # If the system is 1D, plot a line
@@ -128,8 +145,9 @@ def _plot_line(x, y, title, ylabel="$\psi$", legend=None, filename=None, include
     plt.ylabel(ylabel)
     plt.title(title)
     plt.legend(legend)
+
     if filename is not None:
-        plt.savefig("../data/plots/" + filename)
+        plt.savefig(os.path.join("data/plots", filename))
     plt.show()
 
 

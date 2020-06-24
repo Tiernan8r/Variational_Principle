@@ -1,14 +1,24 @@
-import variational_principle.variational_principle as vp
-import variational_principle.plot as plt
-import variational_principle.json_data as json_data
+# import variational_principle.variational_principle as vp
+from variational_principle import variation_method as vp
+# import variational_principle as vp
+# import plot as plt
+# import variational_principle.plot as plt
+from variational_principle import plot as plt
+# import json_data as json_data
+# import variational_principle.json_data as json_data
+from variational_principle import json_data
 
 import logging
 import logging.config
 import json
 
-def main():
 
-    logging.config.dictConfig(json.load(open("logging.json")))
+def run_computation():
+
+    import os
+    print(os.getcwd())
+
+    logging.config.dictConfig(json.load(open("logging.json", "r")))
     logger = logging.getLogger(__name__)
 
     logger.info("Beginning simulation:")
@@ -59,7 +69,3 @@ def main():
     logger.info("DONE plotting")
 
     logger.info("--END--")
-
-
-if __name__ == "__main__":
-    main()
