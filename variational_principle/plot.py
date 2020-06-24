@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
 import variational_principle.json_data as json_data
-# import json_data
 import logging
 
 import os

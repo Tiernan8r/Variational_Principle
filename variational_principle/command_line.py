@@ -1,11 +1,5 @@
-# import variational_principle.variational_principle as vp
 from variational_principle import variation_method as vp
-# import variational_principle as vp
-# import plot as plt
-# import variational_principle.plot as plt
 from variational_principle import plot as plt
-# import json_data as json_data
-# import variational_principle.json_data as json_data
 from variational_principle import json_data
 
 import logging
