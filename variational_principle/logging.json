@@ -22,7 +22,7 @@
       ],
       "propagate": "no"
     },
-    "quantum_operators": {
+    "variational_principle.quantum_operators": {
       "level": "WARNING",
       "handlers": [
         "console"
