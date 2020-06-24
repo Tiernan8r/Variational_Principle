@@ -1,5 +1,5 @@
 import numpy as np
-import calculus.laplacian as lap
+import variational_principle.calculus.laplacian as lap
 import scipy.integrate as intg
 
 import logging

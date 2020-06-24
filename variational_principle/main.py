@@ -1,6 +1,6 @@
-import variational_principle as vp
-import plot as plt
-import json_data
+import variational_principle.variational_principle as vp
+import variational_principle.plot as plt
+import variational_principle.json_data as json_data
 
 import logging
 import logging.config

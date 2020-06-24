@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
-import json_data
+import variational_principle.json_data
 import logging
 
 # neatness nicety, for displaying indexing of the states.

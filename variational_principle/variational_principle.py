@@ -3,9 +3,9 @@ import random
 import numpy as np
 import scipy.linalg as la
 
-import quantum_operators as qo
-import calculus.laplacian as lap
-import potential as pot
+import variational_principle.quantum_operators as qo
+import variational_principle.calculus.laplacian as lap
+import variational_principle.potential as pot
 
 import logging
 import time
