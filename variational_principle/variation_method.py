@@ -6,9 +6,11 @@ import scipy.linalg as la
 import variational_principle.quantum_operators as qo
 import variational_principle.calculus.laplacian as lap
 import variational_principle.potential as pot
+import variational_principle.json_data as jd
 
 import logging
 import time
+import collections
 
 
 def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
@@ -138,8 +140,8 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     return psi, final_energy
 
 
-def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5) -> (
-np.ndarray, np.ndarray, np.ndarray):
+def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5, psi_queue=None, E_queue=None) -> (
+np.ndarray, np.ndarray, np.ndarray, np.ndarray):
     """
     The method to set up the variables and system, and aggregate the computed wavefunctions.
     :param start: The lower bound of the grid.
@@ -202,6 +204,12 @@ np.ndarray, np.ndarray, np.ndarray):
         logger.info("=" * 10)
         # Generate the psi for this order number
         psi, E = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
+
+        if psi_queue is not None:
+            psi_queue.append(psi)
+        if E_queue is not None:
+            E_queue.append(E)
+
         logger.info("=" * 10)
         logger.info("DONE generating energy eigenstate and eigenvalue")
 
@@ -220,3 +228,18 @@ np.ndarray, np.ndarray, np.ndarray):
     logger.info("DONE simulation of %d energy eigenstate(s)", num_states)
     return r, V, all_psi, all_E
 
+
+def config_compute(json_data: jd.JsonData, threaded=False) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+
+    psi_q = E_q = None
+    if threaded:
+        psi_q = collections.deque()
+        E_q = collections.deque()
+
+    start = json_data.start
+    stop = json_data.stop
+    N = json_data.num_samples
+    D = json_data.num_dimensions
+    num_states = json_data.num_states
+    num_iterations = 10 ** json_data.num_iterations
+    return compute(start, stop, N, D, num_states, num_iterations, psi_queue=psi_q, E_queue=E_q)

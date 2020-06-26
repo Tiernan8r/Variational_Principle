@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 
@@ -17,7 +18,6 @@ _backup_default_data = {"label": "Linear Harmonic Oscillator",
 
 def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_iterations, plot_with_potential,
                plot_scale, colourmap, filename="data.json"):
-
     logger = logging.getLogger(__name__)
     logger.info("Writing json data to '%s'", filename)
 
@@ -40,27 +40,30 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
 
 
 def read_data(filename="data.json"):
-
     logger = logging.getLogger(__name__)
     logger.info("Reading json data from '%s'", filename)
 
-    with open(filename) as data_file:
-        try:
-            json_data = json.load(data_file)
-        except json.JSONDecodeError as e:
-            json_data = read_default()
-            logger.warning("Error encountered when trying to read '%s'", filename)
-            logger.warning(e)
-        return json_data
+    try:
+        with open(filename) as data_file:
+            try:
+                json_data = json.load(data_file)
+            except json.JSONDecodeError as e:
+                json_data = read_default()
+                logger.warning("Error encountered when trying to read '%s', reading from default instead.", filename)
+                logger.warning(e)
+            return json_data
+    except FileNotFoundError as e:
+        logger.warning("File '%s' does not exist, reading from default instead.", filename)
+        logger.warning(e)
+        return read_default()
 
 
-class JsonData (object):
+class JsonData(object):
 
     def __init__(self, filename="data.json"):
         self._filename = filename
 
     def _write(self, data: dict):
-
         label = data.get("label", _backup_default_data["label"])
         start = data.get("start", _backup_default_data["start"])
         stop = data.get("stop", _backup_default_data["stop"])
@@ -120,7 +123,7 @@ class JsonData (object):
 
     @property
     def num_dimensions(self):
-        return  self._read().get("num_dimensions", _backup_default_data["num_dimensions"])
+        return self._read().get("num_dimensions", _backup_default_data["num_dimensions"])
 
     @num_dimensions.setter
     def num_dimensions(self, dim):
@@ -186,6 +189,10 @@ def write_default():
 
 
 def read_default():
+
+    if not os.path.exists("default_data.json"):
+        write_default()
+
     json_data = JsonData("default_data.json")
     try:
         return json_data._read()
