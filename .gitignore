@@ -128,8 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# ignore generated plot files
-data/plots
-
 #ignore project files
 .idea
+
+# ignore planning text files
+readme_additions
+variational_principle/data/plots/
+
