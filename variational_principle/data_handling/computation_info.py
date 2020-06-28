@@ -4,7 +4,7 @@ import collections
 
 class ComputedData(jd.JsonData):
 
-    def __init__(self, r=None, V=None, filename="data.json"):
+    def __init__(self, r=None, V=None, filename="data/data.json"):
         super().__init__(filename)
 
         self._array_dict = {}

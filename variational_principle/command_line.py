@@ -9,9 +9,6 @@ import json
 
 def run_computation():
 
-    import os
-    print(os.getcwd())
-
     logging.config.dictConfig(json.load(open("data/logging.json", "r")))
     logger = logging.getLogger(__name__)
 

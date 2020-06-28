@@ -17,7 +17,10 @@ _backup_default_data = {"label": "Linear Harmonic Oscillator",
 
 
 def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_iterations, plot_with_potential,
-               plot_scale, colourmap, filename="data.json"):
+               plot_scale, colourmap, filename="data/data.json"):
+
+    filename = os.path.join(os.getcwd(), filename)
+
     logger = logging.getLogger(__name__)
     logger.info("Writing json data to '%s'", filename)
 
@@ -39,9 +42,11 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
     logger.info("Successfully wrote %s to file.", data)
 
 
-def read_data(filename="data.json"):
+def read_data(filename="data/data.json"):
     logger = logging.getLogger(__name__)
     logger.info("Reading json data from '%s'", filename)
+
+    filename = os.path.join(os.getcwd(), filename)
 
     try:
         with open(filename) as data_file:
@@ -60,7 +65,7 @@ def read_data(filename="data.json"):
 
 class JsonData(object):
 
-    def __init__(self, filename="data.json"):
+    def __init__(self, filename="data/data.json"):
         self._filename = filename
 
     def write(self, data: dict):
@@ -183,17 +188,16 @@ class JsonData(object):
 
 
 def write_default():
-    json_dat = JsonData("default_data.json")
+    json_dat = JsonData("data/default_data.json")
     json_dat.write(_backup_default_data)
-    # write_data("Linear Harmonic Oscillator", -10, 10, 1, 1, 100, 5, False, 10, filename="default_data.json")
 
 
 def read_default():
 
-    if not os.path.exists("default_data.json"):
+    if not os.path.exists("data/default_data.json"):
         write_default()
 
-    json_data = JsonData("default_data.json")
+    json_data = JsonData("data/default_data.json")
     try:
         return json_data.read()
     except json.JSONDecodeError as json_decoder_error:
