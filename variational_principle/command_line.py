@@ -12,7 +12,7 @@ def run_computation():
     import os
     print(os.getcwd())
 
-    logging.config.dictConfig(json.load(open("logging.json", "r")))
+    logging.config.dictConfig(json.load(open("data/logging.json", "r")))
     logger = logging.getLogger(__name__)
 
     logger.info("Beginning simulation:")
