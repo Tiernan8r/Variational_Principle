@@ -6,11 +6,10 @@ import scipy.linalg as la
 import variational_principle.quantum_operators as qo
 import variational_principle.calculus.laplacian as lap
 import variational_principle.potential as pot
-import variational_principle.json_data as jd
+import variational_principle.data_handling.computation_info as ci
 
 import logging
 import time
-import collections
 
 
 def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
@@ -140,18 +139,20 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     return psi, final_energy
 
 
-def compute(start=-10, stop=10, N=100, D=1, num_states=1, num_iterations=10 ** 5, psi_queue=None, E_queue=None) -> (
+def compute(computation_info : ci.ComputedData) -> (
 np.ndarray, np.ndarray, np.ndarray, np.ndarray):
     """
     The method to set up the variables and system, and aggregate the computed wavefunctions.
-    :param start: The lower bound of the grid.
-    :param stop: The upper bound of the grid.
-    :param N: The number of samples along an axis.
-    :param D: The number of dimensions.
-    :param num_states: The number of wavefunctions to compute.
-    :param num_iterations: The number of iterations per computation.
+    :param computation_info: a ComputedData object containing info required to set up calculation.
     :return: r, V, all_psi: the grid, potential function and the list of all the wavefunctions.
     """
+
+    start = computation_info.start
+    stop = computation_info.stop
+    N = computation_info.num_samples
+    D = computation_info.num_dimensions
+    num_states = computation_info.num_states
+    num_iterations = 10 ** computation_info.num_iterations
 
     logger = logging.getLogger(__name__)
     logger.info("Beginning computation of %d energy eigenstate(s).", num_states)
@@ -174,10 +175,12 @@ np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         axes.append(x)
     # populate the grid using the axes.
     r = np.array(np.meshgrid(*axes, indexing="ij"))
+    computation_info.r = r
 
     logger.info("Generating potential.")
     # generate the potential for the system
     V = pot.potential(r)
+    computation_info.V = V
 
     # Calculate the grid spacing for the symmetric grid.
     dr = (stop - start) / N
@@ -205,10 +208,8 @@ np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         # Generate the psi for this order number
         psi, E = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
 
-        if psi_queue is not None:
-            psi_queue.append(psi)
-        if E_queue is not None:
-            E_queue.append(E)
+        computation_info.put_psi(psi)
+        computation_info.put_energy(E)
 
         logger.info("=" * 10)
         logger.info("DONE generating energy eigenstate and eigenvalue")
@@ -227,19 +228,3 @@ np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
     logger.info("DONE simulation of %d energy eigenstate(s)", num_states)
     return r, V, all_psi, all_E
-
-
-def config_compute(json_data: jd.JsonData, threaded=False) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
-
-    psi_q = E_q = None
-    if threaded:
-        psi_q = collections.deque()
-        E_q = collections.deque()
-
-    start = json_data.start
-    stop = json_data.stop
-    N = json_data.num_samples
-    D = json_data.num_dimensions
-    num_states = json_data.num_states
-    num_iterations = 10 ** json_data.num_iterations
-    return compute(start, stop, N, D, num_states, num_iterations, psi_queue=psi_q, E_queue=E_q)

@@ -1,6 +1,6 @@
 from variational_principle import variation_method as vp
 from variational_principle import plot as plt
-from variational_principle import json_data
+from variational_principle.data_handling import computation_info
 
 import logging
 import logging.config
@@ -18,36 +18,37 @@ def run_computation():
     logger.info("Beginning simulation:")
 
     logger.info("Loading system info from 'data.json':")
-    data_file = json_data.JsonData()
+    data = computation_info.ComputedData()
     logger.info("DONE reading json file.")
 
     logger.info("Assigning variables from 'data.json'")
     # Whether to plot the potential function or not.
-    include_potential = data_file.plot_with_potential
+    include_potential = data.plot_with_potential
     logger.info("Set `include_potential` to %s", include_potential)
 
     # The size and range of the grid
-    start, stop, N = data_file.start, data_file.stop, data_file.num_samples
+    start, stop, N = data.start, data.stop, data.num_samples
     logger.info("Set `start` to %f", start)
     logger.info("Set `stop` to %f", stop)
     logger.info("Set `N` to %d", N)
 
     # The number of orders of psi to calculate
-    num_states = data_file.num_states
+    num_states = data.num_states
     logger.info("Set `num_states` to %d", num_states)
     # The number of axes of the system
-    D = data_file.num_dimensions
+    D = data.num_dimensions
     logger.info("Set `D` to %d", D)
     # Number of times to generate samples in the wavefunction
-    num_iterations = 10 ** data_file.num_iterations
+    num_iterations = 10 ** data.num_iterations
     logger.info("Set `num_iterations` to %d", num_iterations)
 
     # a factor to scale the psi by when plotting it together with the potential function in the 1D case.
-    v_scale = data_file.plot_scale
+    v_scale = data.plot_scale
     logger.info("Set `v_scale` to %f", v_scale)
 
     logger.info("Computing the energy eigenstates")
-    r, V, all_psi, all_E = vp.compute(start, stop, N, D, num_states, num_iterations)
+
+    r, V, all_psi, all_E = vp.compute(data)
     logger.info("DONE computing energy eigenstates")
 
     i = 0
