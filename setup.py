@@ -7,5 +7,5 @@ setup(name='variational_principle',
       author='Tiernan8r',
       author_email='tiernan8r@pm.me',
       license='MIT',
-      packages=['variational_principle', 'variational_principle.calculus'],
+      packages=['variational_principle'],
       zip_safe=True)
