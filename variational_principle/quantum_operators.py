@@ -22,7 +22,7 @@ def normalise(psi: np.ndarray, dr: float) -> np.ndarray:
     """
 
     logger = logging.getLogger(__name__)
-    logger.info("Normalising energy eigenstate")
+    logger.debug("Normalising energy eigenstate")
 
     # integrate using the rectangular rule
     psi_sq = psi * psi
@@ -47,7 +47,7 @@ def energy(psi: np.ndarray, V: np.ndarray, dr: float) -> float:
     """
 
     logger = logging.getLogger(__name__)
-    logger.info("Calculating energy eigenvalue for energy eigenstate.")
+    logger.debug("Calculating energy eigenvalue for energy eigenstate.")
 
     # The laplacian derivative matrix
     DEV2 = lap.get_laplacian()

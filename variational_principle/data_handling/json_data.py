@@ -22,7 +22,7 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
     filename = os.path.join(os.getcwd(), filename)
 
     logger = logging.getLogger(__name__)
-    logger.info("Writing json data to '%s'", filename)
+    logger.debug("Writing json data to '%s'", filename)
 
     data = {"label": label,
             "start": start,
@@ -39,12 +39,12 @@ def write_data(label, start, stop, num_states, num_dimensions, num_samples, num_
         dump = json.dumps(data, indent=4, separators=(",", ": "), ensure_ascii=False)
         data_file.write(dump)
 
-    logger.info("Successfully wrote %s to file.", data)
+    logger.debug("Successfully wrote %s to file.", data)
 
 
 def read_data(filename="data/data.json"):
     logger = logging.getLogger(__name__)
-    logger.info("Reading json data from '%s'", filename)
+    logger.debug("Reading json data from '%s'", filename)
 
     filename = os.path.join(os.getcwd(), filename)
 
@@ -66,6 +66,7 @@ def read_data(filename="data/data.json"):
 class JsonData(object):
 
     def __init__(self, filename="data/data.json"):
+        # TODO make check for exists of given filename and make directorie(s) if not
         self._filename = filename
 
     def write(self, data: dict):

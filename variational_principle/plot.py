@@ -26,12 +26,12 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     logger = logging.getLogger(__name__)
 
     if not os.path.exists("data/plots"):
-        logger.info("The path for saving image files does not exist, initialising it:")
-        logger.info("Working with path: %s", os.getcwd())
+        logger.debug("The path for saving image files does not exist, initialising it:")
+        logger.debug("Working with path '%s'", os.getcwd())
         try:
             path = os.path.join(os.getcwd(), "data/plots")
             os.makedirs(path)
-            logger.info("Made directory %s", path)
+            logger.debug("Made directory '%s'", path)
         except FileExistsError as e:
             logger.warning(e)
             raise e
@@ -40,14 +40,14 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
             raise e
 
     sys_name = json_data.JsonData().label
-    logger.info("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), sys_name)
+    logger.debug("Plotting the %d energy eigenstate(s) for the system: '%s'", len(all_psi), sys_name)
 
     # If the system is 1D, plot a line
     if D == 1:
 
-        logger.info("The system will be plotted as one dimensional.")
-        logger.info("Plotting line plot(s) for the energy eigenstate(s).")
-        logger.info("The eigenstate(s) will be plotted with the potential: %s", include_V)
+        logger.debug("The system will be plotted as one dimensional.")
+        logger.debug("Plotting line plot(s) for the energy eigenstate(s).")
+        logger.debug("The eigenstate(s) will be plotted with the potential: %s", include_V)
 
         # The number of psi states to plot.
         num_states = len(all_psi)
@@ -89,8 +89,8 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     # If the system is 2D, plot the img, wireframe and surfaces.
     elif D == 2:
 
-        logger.info("The system will be plotted as two dimensional.")
-        logger.info("Plotting image, wireframe and surface plots for the energy eigenstate(s).")
+        logger.debug("The system will be plotted as two dimensional.")
+        logger.debug("Plotting image, wireframe and surface plots for the energy eigenstate(s).")
 
         if include_V:
             title = "The Potential function for the {} along $x$ & $y$".format(sys_name)
@@ -108,8 +108,8 @@ def plot_system(r, all_psi : list, D, include_V=False, V=None, V_scale=1):
     # if the system is 3D, plot the 3D scatter.
     elif D == 3:
 
-        logger.info("The system will be plotted as three dimensional.")
-        logger.info("Plotting a 3D scatter plot for the energy eigenstate(s).")
+        logger.debug("The system will be plotted as three dimensional.")
+        logger.debug("Plotting a 3D scatter plot for the energy eigenstate(s).")
 
         if include_V:
             title = "The Potential function for the {} along $x$, $y$ & $z$".format(sys_name)

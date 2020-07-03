@@ -15,27 +15,27 @@ def _partial_derivative_matrix(D: int, N: int, axis_number: int, dr: float) -> n
     """
 
     logger = logging.getLogger(__name__)
-    logger.info("Generating a second derivative matrix for %d dimensions of size %d, along axis %d", D, N, axis_number)
+    logger.debug("Generating a second derivative matrix for %d dimension(s) of size %d, along axis %d", D, N, axis_number)
 
-    logger.info("Constraining axis number to total number of dimensions")
+    logger.debug("Constraining axis number to total number of dimensions")
     # cap axis_number in range to prevent errors.
     axis_number %= D
 
     # Determine the number of the cell grids that need to be repeated along to populate the matrix
     num_cells = D - (axis_number + 1)
 
-    logger.info("Generating second derivative stencil")
+    logger.debug("Generating second derivative stencil")
     # The general pattern for a derivative matrix along the axis: axis_number, for a num_axes number of
     # dimensions, each of length N
     diagonals = [[-2] * N ** D,
                  (([1] * N ** axis_number) * (N - 1) + [0] * N ** axis_number) * N ** num_cells,
                  (([1] * N ** axis_number) * (N - 1) + [0] * N ** axis_number) * N ** num_cells]
 
-    logger.info("Generating second derivative diagonal matrix")
+    logger.debug("Generating second derivative diagonal matrix")
     # Create a sparse matrix for the given diagonals, of the desired size.
     D_n = diags(diagonals, [0, -N ** axis_number, N ** axis_number], shape=(N ** D, N ** D))
 
-    logger.info("Scaling by grid spacing")
+    logger.debug("Scaling by grid spacing")
     # return the matrix, factored by the grid spacing as required by the central difference formula
     return D_n * (dr ** -2)
 
@@ -49,7 +49,7 @@ def generate_laplacian(D: int, N: int, dr: float):
     """
 
     logger = logging.getLogger(__name__)
-    logger.info("Generating Laplacian matrix operator for system of %d dimensions, sized %d", D, N)
+    logger.debug("Generating Laplacian matrix operator for system of %d dimension(s), sized %d", D, N)
 
     # Initially set DEV2 to be undefined.
     laplacian = None
@@ -65,8 +65,8 @@ def generate_laplacian(D: int, N: int, dr: float):
         else:
             laplacian += D_n
 
-    logger.info("DONE generating Laplacian.")
-    logger.info("Setting global variable.")
+    logger.debug("DONE generating Laplacian.")
+    logger.debug("Setting global variable.")
 
     global DEV2
     DEV2 = laplacian
