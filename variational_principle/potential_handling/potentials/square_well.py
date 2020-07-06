@@ -16,11 +16,11 @@ def square_well(r: np.ndarray, V_0=10, well_fraction=3, perturbed=False, perturb
     V = np.array(np.meshgrid(*wells, indexing="ij"))
 
     # Correction of Corners:
-    V = V.reshape(N ** D)
+    V = V.reshape(D * (N ** D))
 
     if perturbed:
         # Perturbation
-        R = r.reshape(N ** D)
+        R = r.reshape(D * (N ** D))
     for i in range(len(V)):
         if V[i] > 0:
             V[i] = V_0

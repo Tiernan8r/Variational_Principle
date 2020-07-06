@@ -1,5 +1,7 @@
 import numpy as np
 
+display_name = "Crystal Band Structure"
+
 
 def crystal_band(r: np.ndarray):
     N = r.shape[1]

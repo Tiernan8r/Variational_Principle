@@ -1,5 +1,7 @@
 import numpy as np
 
+display_name = "Central Potential"
+
 
 def central_potential(r: np.ndarray, A=-10, B=1.5, C=8):
     V_c = A * C * r ** -1

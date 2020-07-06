@@ -37,6 +37,29 @@ def potential(r: np.ndarray, potential_name="harmonic_oscillator") -> np.ndarray
     return V.sum(axis=0)
 
 
+def potential_display_name(potential_name):
+
+    logger = logging.getLogger(__name__)
+
+    if potential_name not in list_potentials():
+        logger.warning("The given potential '%s' was not found in the list of potentials!" % potential_name)
+        return potential_name
+
+    path = "variational_principle.potential_handling.potentials."
+    try:
+        module = importlib.import_module(path + potential_name)
+    except ModuleNotFoundError as e:
+        logger.warning(e)
+        return potential_name
+    try:
+        display_name = getattr(module, "display_name")
+    except AttributeError as e:
+        logger.warning(e)
+        return potential_name
+
+    return display_name
+
+
 def potentials_directory_path():
     current_path = __file__
     parent_path = os.path.dirname(current_path)

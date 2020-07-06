@@ -1,5 +1,7 @@
 import numpy as np
 
+display_name = "Delta Barrier Potential"
+
 
 def delta_barrier(r: np.ndarray):
     V = np.zeros(r.shape)
