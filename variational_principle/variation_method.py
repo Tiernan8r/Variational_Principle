@@ -137,7 +137,13 @@ def nth_state(r: np.ndarray, V: np.ndarray, dr: float, D: int, N: int, num_itera
     return psi, final_energy
 
 
-def calculate_r(start, stop, N, D):
+def calculate_r(computed_data):
+
+    start = computed_data.start
+    stop = computed_data.stop
+    N = computed_data.num_samples
+    D = computed_data.num_dimensions
+
     x = np.linspace(start, stop, N)
     # The axes along each dimension
     # axes = [x] * D
@@ -149,21 +155,21 @@ def calculate_r(start, stop, N, D):
     return r
 
 
-def compute(computation_data: ci.ComputationData, write_pipe=None) -> (
+def compute(computed_data: ci.ComputationData, write_pipe=None) -> (
         np.ndarray, np.ndarray, np.ndarray, np.ndarray):
     """
     The method to set up the variables and system, and aggregate the computed wavefunctions.
-    :param computation_data: a ComputedData object containing info required to set up calculation.
+    :param computed_data: a ComputedData object containing info required to set up calculation.
     :param write_pipe: A Connection object for a pipe to write computed data to if implementing multiprocessing.
     :return: r, V, all_psi: the grid, potential function and the list of all the wavefunctions.
     """
 
-    start = computation_data.start
-    stop = computation_data.stop
-    N = computation_data.num_samples
-    D = computation_data.num_dimensions
-    num_states = computation_data.num_states
-    num_iterations = 10 ** computation_data.num_iterations
+    start = computed_data.start
+    stop = computed_data.stop
+    N = computed_data.num_samples
+    D = computed_data.num_dimensions
+    num_states = computed_data.num_states
+    num_iterations = 10 ** computed_data.num_iterations
 
     logger = logging.getLogger(__name__)
     logger.debug("Beginning computation of %d energy eigenstate(s).", num_states)
@@ -178,28 +184,18 @@ def compute(computation_data: ci.ComputationData, write_pipe=None) -> (
         num_states = N - 2
 
     logger.debug("Generating spatial grid")
-    # The coordinates along the x axis
-    # x = np.linspace(start, stop, N)
-    # # The axes along each dimension
-    # # axes = [x] * D
-    # axes = [x]
-    # for i in range(D - 1):
-    #     axes.append(x)
-    # # populate the grid using the axes.
-    # r = np.array(np.meshgrid(*axes, indexing="ij"))
-    # computation_data.r = r
-    r = calculate_r(start, stop, N, D)
-    computation_data.r = r
+    r = calculate_r(computed_data)
+    computed_data.r = r
 
     logger.debug("Generating potential.")
     # generate the potential for the system
-    potential_name = computation_data.potential_name
+    potential_name = computed_data.potential_name
     V = pot.potential(r, potential_name)
-    computation_data.V = V
+    computed_data.V = V
     if write_pipe is not None:
-        write_pipe.send((computation_data.r_key, r))
+        write_pipe.send((computed_data.r_key, r))
         logger.debug("Sent position array through pipe.")
-        write_pipe.send((computation_data.v_key, V))
+        write_pipe.send((computed_data.v_key, V))
         logger.debug("Sent potential array through pipe.")
 
     # Calculate the grid spacing for the symmetric grid.
@@ -228,8 +224,8 @@ def compute(computation_data: ci.ComputationData, write_pipe=None) -> (
         # Generate the psi for this order number
         psi, E = nth_state(r, V, dr, D, N, num_iterations, all_psi_linear, i + 1)
 
-        computation_data.add_psi(psi)
-        computation_data.add_energy(E)
+        computed_data.add_psi(psi)
+        computed_data.add_energy(E)
 
         if write_pipe is not None:
             key = "state_{}".format(i)
@@ -252,9 +248,9 @@ def compute(computation_data: ci.ComputationData, write_pipe=None) -> (
             all_psi_linear = np.vstack((all_psi_linear, [psi_linear]))
 
     logger.debug("DONE simulation of %d energy eigenstate(s)", num_states)
-    computation_data.r = r
-    computation_data.V = V
+    computed_data.r = r
+    computed_data.V = V
     # computation_data.all_psi = all_psi
     # computation_data.all_energy = all_E
 
-    return computation_data
+    return computed_data
