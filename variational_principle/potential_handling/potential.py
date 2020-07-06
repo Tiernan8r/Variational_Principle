@@ -45,6 +45,12 @@ def potentials_directory_path():
     return potentials_path
 
 
+def full_potential_path(potential_name: str):
+    directory_path = potentials_directory_path()
+    path = os.path.join(directory_path, potential_name + ".py")
+    return path
+
+
 def list_potentials():
     potentials_path = potentials_directory_path()
 
