@@ -31,11 +31,12 @@ def crystal_band(r: np.ndarray):
     V = np.array(np.meshgrid(*wells, indexing="ij"))
 
     # Correction of Corners:
-    V = np.sum(V, axis=0)
-    V = V.reshape(N ** D)
+    # V = np.sum(V, axis=0)
+    V = V.reshape(D * (N ** D))
     for i in range(len(V)):
         if V[i] > 0:
             V[i] = V_0
-    V = V.reshape([N] * D)
+    shape = [D] + [N] * D
+    V = V.reshape(shape)
 
     return V

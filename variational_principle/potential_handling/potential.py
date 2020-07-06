@@ -24,21 +24,29 @@ def potential(r: np.ndarray, potential_name="harmonic_oscillator") -> np.ndarray
     except ModuleNotFoundError as e:
         logger.warning("Module '%s' not found, defaulting to '%s'." % (potential_name, default_potential_name))
         logger.warning(e)
-        return None
-        # module = importlib.import_module(path + default_potential_name)
-        # potential_name = default_potential_name
+        return potential(r, default_potential_name)
 
     foo = getattr(module, potential_name)
     V = foo(r)
+    if V is None and potential_name != default_potential_name:
+        return potential(r, default_potential_name)
+    elif V is None and potential_name == default_potential_name:
+        logger.warning("V is None, even from default!")
+        raise ValueError("Potential evaluating to None from potential file '{}.py'.".format(potential_name))
 
     return V.sum(axis=0)
 
 
-def list_potentials():
+def potentials_directory_path():
     current_path = __file__
     parent_path = os.path.dirname(current_path)
     potential_directory = "potentials"
     potentials_path = os.path.join(parent_path, potential_directory)
+    return potentials_path
+
+
+def list_potentials():
+    potentials_path = potentials_directory_path()
 
     files = os.scandir(potentials_path)
     potentials = []

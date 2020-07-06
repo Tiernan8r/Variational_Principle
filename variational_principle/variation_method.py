@@ -12,7 +12,7 @@ import logging
 import time
 
 
-def nth_state(r: np.ndarray, V: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
+def nth_state(r: np.ndarray, v: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
               prev_psi_linear: np.ndarray, n: int) -> (np.ndarray, float):
     """
     Calculates the nth psi energy eigenstate wavefunction of a given potential system.
@@ -35,7 +35,7 @@ def nth_state(r: np.ndarray, V: np.ndarray, dr: float, D: int, N: int, num_itera
 
     logger.debug("Calculating the potential")
     # turn the potential grid into a linear column vector for linear algebra purposes.
-    V = V.reshape(N ** D)
+    V = v.reshape(N ** D)
 
     logger.debug("Setup default wavefunction.")
     # generate an initial psi, I've found that a quadratic function works nicely (no discontinuities.)
@@ -146,7 +146,6 @@ def calculate_r(computed_data):
 
     x = np.linspace(start, stop, N)
     # The axes along each dimension
-    # axes = [x] * D
     axes = [x]
     for i in range(D - 1):
         axes.append(x)

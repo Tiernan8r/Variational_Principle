@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def square_well(r: np.ndarray, V_0, well_fraction=3, perturbed=False, perturbation=0.5):
+def square_well(r: np.ndarray, V_0=10, well_fraction=3, perturbed=False, perturbation=0.5):
     N = r.shape[1]
     D = r.shape[0]
 
@@ -29,6 +29,7 @@ def square_well(r: np.ndarray, V_0, well_fraction=3, perturbed=False, perturbati
             if V[i] == 0:
                 V[i] += perturbation * R[i]
 
-    V = V.reshape(D, N)
+    shape = [D] + [N] * D
+    V = V.reshape(shape)
 
     return V
