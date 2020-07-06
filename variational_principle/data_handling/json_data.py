@@ -10,6 +10,7 @@ _backup_default_data = {"label": "Linear Harmonic Oscillator",
                         "num_dimensions": 1,
                         "num_samples": 100,
                         "num_iterations": 5,
+                        "potential_name": "harmonic_oscillator",
                         "plot_with_potential": False,
                         "plot_scale": 10,
                         "colourmap": "autumn"
@@ -158,6 +159,16 @@ class JsonData(object):
         self.write(data)
 
     @property
+    def potential_name(self):
+        return self.read().get("potential_name", _backup_default_data["potential_name"])
+
+    @potential_name.setter
+    def potential_name(self, name):
+        data = self.read()
+        data["potential_name"] = name
+        self.write(data)
+
+    @property
     def plot_with_potential(self):
         return self.read().get("plot_with_potential", _backup_default_data["plot_with_potential"])
 
@@ -186,7 +197,6 @@ class JsonData(object):
         data = self.read()
         data["colourmap"] = cmap
         self.write(data)
-
 
 def write_default():
     json_dat = JsonData("data/default_data.json")

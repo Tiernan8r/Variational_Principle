@@ -5,14 +5,14 @@ import scipy.linalg as la
 
 import variational_principle.quantum_operators as qo
 import variational_principle.calculus.laplacian as lap
-import variational_principle.potential as pot
+import variational_principle.potential_handling.potential as pot
 import variational_principle.data_handling.computation_data as ci
 
 import logging
 import time
 
 
-def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
+def nth_state(r: np.ndarray, V: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
               prev_psi_linear: np.ndarray, n: int) -> (np.ndarray, float):
     """
     Calculates the nth psi energy eigenstate wavefunction of a given potential system.
@@ -34,8 +34,6 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     orthonormal_basis = la.null_space(prev_psi_linear).T
 
     logger.debug("Calculating the potential")
-    # Calculate the potential of the system.
-    V = pot.potential(r)
     # turn the potential grid into a linear column vector for linear algebra purposes.
     V = V.reshape(N ** D)
 
@@ -139,8 +137,20 @@ def nth_state(r: np.ndarray, dr: float, D: int, N: int, num_iterations: int,
     return psi, final_energy
 
 
-def compute(computation_data : ci.ComputationData, write_pipe=None) -> (
-np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+def calculate_r(start, stop, N, D):
+    x = np.linspace(start, stop, N)
+    # The axes along each dimension
+    # axes = [x] * D
+    axes = [x]
+    for i in range(D - 1):
+        axes.append(x)
+    # populate the grid using the axes.
+    r = np.array(np.meshgrid(*axes, indexing="ij"))
+    return r
+
+
+def compute(computation_data: ci.ComputationData, write_pipe=None) -> (
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray):
     """
     The method to set up the variables and system, and aggregate the computed wavefunctions.
     :param computation_data: a ComputedData object containing info required to set up calculation.
@@ -163,24 +173,28 @@ np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
     # Keep the number of states in bounds, so that the orthonormal basis generator doesn't return an error.
     if num_states >= N:
-        logger.debug("Total number of states to calculate constrained from %d to %d, due to computational limitation.", num_states, N - 2)
+        logger.debug("Total number of states to calculate constrained from %d to %d, due to computational limitation.",
+                     num_states, N - 2)
         num_states = N - 2
 
     logger.debug("Generating spatial grid")
     # The coordinates along the x axis
-    x = np.linspace(start, stop, N)
-    # The axes along each dimension
-    # axes = [x] * D
-    axes = [x]
-    for i in range(D - 1):
-        axes.append(x)
-    # populate the grid using the axes.
-    r = np.array(np.meshgrid(*axes, indexing="ij"))
+    # x = np.linspace(start, stop, N)
+    # # The axes along each dimension
+    # # axes = [x] * D
+    # axes = [x]
+    # for i in range(D - 1):
+    #     axes.append(x)
+    # # populate the grid using the axes.
+    # r = np.array(np.meshgrid(*axes, indexing="ij"))
+    # computation_data.r = r
+    r = calculate_r(start, stop, N, D)
     computation_data.r = r
 
     logger.debug("Generating potential.")
     # generate the potential for the system
-    V = pot.potential(r)
+    potential_name = computation_data.potential_name
+    V = pot.potential(r, potential_name)
     computation_data.V = V
     if write_pipe is not None:
         write_pipe.send((computation_data.r_key, r))
@@ -212,7 +226,7 @@ np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         logger.debug("Calculating the energy eigenstate and eigenvalue for state %d", i)
         logger.debug("=" * 10)
         # Generate the psi for this order number
-        psi, E = nth_state(r, dr, D, N, num_iterations, all_psi_linear, i + 1)
+        psi, E = nth_state(r, V, dr, D, N, num_iterations, all_psi_linear, i + 1)
 
         computation_data.add_psi(psi)
         computation_data.add_energy(E)
